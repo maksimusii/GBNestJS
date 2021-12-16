@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { renderNewsAll } from 'src/views/news/news-all';
 import { renderTemplate } from 'src/views/template';
+import { renderNews } from 'src/views/news/news';
 
 @Controller('news')
 export class NewsController {
@@ -39,8 +40,18 @@ export class NewsController {
   @Get('/view')
   getAllView() {
     const news = this.newsService.getAll();
-
     const content = renderNewsAll(news);
+    return renderTemplate(content, {
+      title: 'Список новостей',
+      description: 'Самые крутые новости',
+    });
+  }
+  @Get('/view/:idNews')
+  getNewsDetails(@Param('idNews') idNews: string) {
+    const idInt = parseInt(idNews);
+    const news = this.newsService.find(idInt);
+    const comments = this.commentsService.find(idInt);
+    const content = renderNews(news, comments);
     return renderTemplate(content, {
       title: 'Список новостей',
       description: 'Самые крутые новости',
