@@ -1,3 +1,4 @@
+import { Comment } from './comments/comments.service';
 import { Injectable } from '@nestjs/common';
 
 export interface News {
@@ -6,9 +7,11 @@ export interface News {
   description: string;
   author: string;
   countView?: number;
+  comments?: Comment[];
+  cover?: string;
 }
 
-function getRendomId(min: number, max: number): number {
+export function getRendomId(min = 1, max = 9999): number {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min;

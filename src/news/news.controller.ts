@@ -1,3 +1,4 @@
+import { CommentsService } from './comments/comments.service';
 import { News, NewsService } from './news.service';
 import {
   Body,
@@ -9,26 +10,47 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { renderNewsAll } from 'src/views/news/news-all';
+import { renderTemplate } from 'src/views/template';
 
 @Controller('news')
 export class NewsController {
-  constructor(private readonly NewsService: NewsService) {}
+  constructor(
+    private readonly newsService: NewsService,
+    private readonly commentsService: CommentsService,
+  ) {}
 
-  @Get('/:id')
+  @Get('/api/:id')
   get(@Param('id') id?: string): News | News[] {
     if (id == 'all') {
       HttpStatus.OK;
-      return this.NewsService.getAll();
+      return this.newsService.getAll();
     } else {
       const idInt = parseInt(id);
-      return this.NewsService.find(idInt);
+      const news = this.newsService.find(idInt);
+      const comments = this.commentsService.find(idInt);
+      return {
+        ...news,
+        comments,
+      };
     }
   }
 
-  @Post()
+  @Get('/view')
+  getAllView() {
+    const news = this.newsService.getAll();
+
+    const content = renderNewsAll(news);
+    return renderTemplate(content, {
+      title: 'Список новостей',
+      description: 'Самые крутые новости',
+    });
+  }
+
+  @Post('/api')
   create(@Body() news: News): News | string {
     if (news.id) {
-      const isChanged = this.NewsService.change(news);
+      const isChanged = this.newsService.change(news);
       if (isChanged) {
         throw new HttpException('News have been created', HttpStatus.OK);
       } else {
@@ -38,14 +60,14 @@ export class NewsController {
         );
       }
     } else {
-      return this.NewsService.create(news);
+      return this.newsService.create(news);
     }
   }
 
-  @Delete('/:id')
+  @Delete('/api/:id')
   remove(@Param('id') id: string): string {
     const idInt = parseInt(id);
-    const isRemoved = this.NewsService.remove(idInt);
+    const isRemoved = this.newsService.remove(idInt);
     return isRemoved ? 'News have been removed' : 'Getting mistakes id';
   }
 }
