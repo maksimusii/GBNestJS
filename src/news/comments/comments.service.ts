@@ -5,7 +5,7 @@ export type Comment = {
   id?: number;
   message: string;
   author: string;
-  replayComents?: ReplayComment[];
+  replayComments?: ReplayComment[];
 };
 
 export type EditComment = {
@@ -23,13 +23,13 @@ export type ReplayComment = {
 @Injectable()
 export class CommentsService {
   private readonly comments = {};
+
   create(idNews: number, comment: Comment) {
     if (!this.comments[idNews]) {
       this.comments[idNews] = [];
     }
-
     this.comments[idNews].push({ ...comment, id: getRendomId() });
-    return 'Comments have been created';
+    return this.comments[idNews];
   }
   find(idNews: number): Comment[] | undefined {
     return this.comments[idNews] || undefined;
@@ -63,5 +63,21 @@ export class CommentsService {
       return this.comments[idNews];
     }
     return 'Комментарий не найден';
+  }
+
+  createReplay(idComment: number, idNews: number, commentReplay: Comment) {
+    const replayCommentId: number = this.comments[idNews].findIndex(
+      (c: Comment) => c.id === idComment,
+    );
+    if (
+      !this.comments[idNews][replayCommentId].hasOwnProperty('replayComments')
+    ) {
+      this.comments[idNews][replayCommentId].replayComments = [];
+    }
+    this.comments[idNews][replayCommentId].replayComments.push({
+      ...commentReplay,
+      id: getRendomId(),
+    });
+    return this.comments[idNews][replayCommentId];
   }
 }

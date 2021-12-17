@@ -24,8 +24,12 @@ function renderNewsBlock(news: News): string {
         }
         <h5 class="card-title">${news.title}</h5>
         <h6 class="card-subtitle mb-2 text-muted">${news.author}</h6>
-        <p class="card-text">${news.description}</p>
-        <a href="/news/view/${news.id}" class="card-link">Подробнее</a>
+        <p class="card-text">${
+          news.description.split(' ').length > 10
+            ? news.description.split(' ').slice(0, 10).join(' ') + ' ...'
+            : news.description
+        }</p>
+        <a href="/news/view/${news.id}/detail" class="card-link">Подробнее</a>
       </div>
     </div>
   </div>

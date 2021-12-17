@@ -46,7 +46,7 @@ export class NewsController {
       description: 'Самые крутые новости',
     });
   }
-  @Get('/view/:idNews')
+  @Get('/view/:idNews/detail')
   getNewsDetails(@Param('idNews') idNews: string) {
     const idInt = parseInt(idNews);
     const news = this.newsService.find(idInt);

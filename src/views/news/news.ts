@@ -13,7 +13,13 @@ function renderComments(comments: Comment[]): string {
   let commentsListHtml = '';
   if (comments) {
     for (const commentsItem of comments) {
-      commentsListHtml += renderCommentsBlock(commentsItem);
+      let replayComentHtml = '';
+      if (commentsItem.hasOwnProperty('replayComments')) {
+        for (const replayComments of commentsItem.replayComments) {
+          replayComentHtml += renderReplayCommentsBlock(replayComments);
+        }
+      }
+      commentsListHtml += renderCommentsBlock(commentsItem, replayComentHtml);
     }
   } else {
     commentsListHtml = 'У этой новости еще нет комментариев';
@@ -21,7 +27,10 @@ function renderComments(comments: Comment[]): string {
   return commentsListHtml;
 }
 
-function renderCommentsBlock(comments: Comment): string {
+function renderCommentsBlock(
+  comments: Comment,
+  replayComments?: string,
+): string {
   return `
     <li class="list-group-item">
     <div class="card">
@@ -31,15 +40,25 @@ function renderCommentsBlock(comments: Comment): string {
       <div class="card-body">
         <p class="card-text">${comments.message}</p>
       </div>
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="button-addon2">
-        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Отправить коментарий</button>
-      </div>
+      ${replayComments}
     </div>
     </li>
 `;
 }
-
+function renderReplayCommentsBlock(replay: Comment): string {
+  return `
+    <li class="list-group-item">
+      <div class="card">
+        <div class="card-header">
+            ${replay.author}: 
+            <div class="card-body">
+              <p class="card-text">${replay.message}</p>
+            </div>
+        </div>
+      </div>
+    </li>
+`;
+}
 function renderNewsBlock(news: News, commentsListHTML: string): string {
   return `
     <div class="card" style="width: 100%;">

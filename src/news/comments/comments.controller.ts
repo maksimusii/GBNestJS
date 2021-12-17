@@ -22,6 +22,21 @@ export class CommentsController {
     return this.commentsService.create(idNewsInt, comment);
   }
 
+  @Post('/api/:idNews/:idComment')
+  createReplay(
+    @Param('idComment') idComment: string,
+    @Param('idNews') idNews: string,
+    @Body() commentReplay: Comment,
+  ): Comment | string {
+    const idCommentInt = parseInt(idComment);
+    const idNewsInt = parseInt(idNews);
+    return this.commentsService.createReplay(
+      idCommentInt,
+      idNewsInt,
+      commentReplay,
+    );
+  }
+
   @Get('/api/:idNews')
   get(@Param('idNews') idNews: string): Comment[] | undefined {
     const idNewsInt = parseInt(idNews);
