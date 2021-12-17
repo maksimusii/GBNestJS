@@ -11,6 +11,16 @@ export interface News {
   cover?: string;
 }
 
+export interface ChangeNews {
+  id?: number;
+  title?: string;
+  description?: string;
+  author?: string;
+  countView?: number;
+  comments?: Comment[];
+  cover?: string;
+}
+
 export function getRendomId(min = 1, max = 9999): number {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -51,12 +61,13 @@ export class NewsService {
     return false;
   }
 
-  change(news: News): boolean {
+  change(news: ChangeNews): boolean {
     const chagedNewsId = this.news.findIndex((item) => item.id === news.id);
     if (chagedNewsId !== -1) {
-      this.news[chagedNewsId].title = news.title;
-      this.news[chagedNewsId].author = news.author;
-      this.news[chagedNewsId].description = news.description;
+      this.news[chagedNewsId] = {
+        ...this.news[chagedNewsId],
+        ...news,
+      };
       return true;
     }
     return false;
