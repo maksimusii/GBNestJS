@@ -11,11 +11,15 @@ import {
   Param,
   Post,
   Put,
+  UseInterceptors,
 } from '@nestjs/common';
 import { renderNewsAll } from 'src/views/news/news-all';
 import { renderTemplate } from 'src/views/template';
 import { renderNews } from 'src/views/news/news';
 import { EditeNewsDto } from './dtos/edit-news-dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { HelperFileLoader } from './utils/HelperFileLoader';
 
 @Controller('news')
 export class NewsController {
@@ -62,6 +66,14 @@ export class NewsController {
   }
 
   @Post('/api')
+  @UseInterceptors(
+    FileInterceptor('cover', {
+      storage: diskStorage({
+        destination: HelperFileLoader.destinationPath,
+        filename: HelperFileLoader.customFileName,
+      }),
+    }),
+  )
   create(@Body() news: CreateNewsDto): News {
     return this.newsService.create(news);
   }
