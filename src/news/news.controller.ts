@@ -1,3 +1,4 @@
+import { CreateNewsDto } from './dtos/create-news-dto';
 import { CommentsService } from './comments/comments.service';
 import { News, NewsService } from './news.service';
 import {
@@ -9,10 +10,12 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { renderNewsAll } from 'src/views/news/news-all';
 import { renderTemplate } from 'src/views/template';
 import { renderNews } from 'src/views/news/news';
+import { EditeNewsDto } from './dtos/edit-news-dto';
 
 @Controller('news')
 export class NewsController {
@@ -59,19 +62,20 @@ export class NewsController {
   }
 
   @Post('/api')
-  create(@Body() news: News): News | string {
-    if (news.id) {
-      const isChanged = this.newsService.change(news);
-      if (isChanged) {
-        throw new HttpException('News have been created', HttpStatus.OK);
-      } else {
-        throw new HttpException(
-          'Getting mistakes id',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+  create(@Body() news: CreateNewsDto): News {
+    return this.newsService.create(news);
+  }
+
+  @Put('/api')
+  change(@Body() news: EditeNewsDto): string {
+    const isChanged = this.newsService.change(news);
+    if (isChanged) {
+      throw new HttpException('News have been changed', HttpStatus.OK);
     } else {
-      return this.newsService.create(news);
+      throw new HttpException(
+        'Getting mistakes id',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
