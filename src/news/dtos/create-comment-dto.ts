@@ -18,4 +18,6 @@ export class CreateCommentsDto {
   author: string;
 
   replayComments: CreateReplayCommentsDto[];
+
+  avatar: string;
 }

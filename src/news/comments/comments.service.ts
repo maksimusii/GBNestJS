@@ -6,12 +6,14 @@ export type Comment = {
   message: string;
   author: string;
   replayComments?: ReplayComment[];
+  avatar?: string;
 };
 
 export type EditComment = {
   id?: number;
   message?: string;
   author?: string;
+  avatar?: string;
 };
 
 export type ReplayComment = {

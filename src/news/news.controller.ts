@@ -89,21 +89,7 @@ export class NewsController {
   }
 
   @Put('/api')
-  @UseInterceptors(
-    FileInterceptor('cover', {
-      storage: diskStorage({
-        destination: HelperFileLoader.destinationPath,
-        filename: HelperFileLoader.customFileName,
-      }),
-    }),
-  )
-  change(
-    @Body() news: EditeNewsDto,
-    @UploadedFile() cover: Express.Multer.File,
-  ): string {
-    if (cover?.filename) {
-      news.cover = PATH_NEWS + cover.filename;
-    }
+  change(@Body() news: EditeNewsDto): string {
     const isChanged = this.newsService.change(news);
     if (isChanged) {
       throw new HttpException('News have been changed', HttpStatus.OK);

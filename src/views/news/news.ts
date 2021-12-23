@@ -34,6 +34,11 @@ function renderCommentsBlock(
   return `
     <li class="list-group-item">
     <div class="card">
+    ${
+      comments.avatar
+        ? `<img src="${comments.avatar}" style="height: 200px; object-fit: cover;" class="card-img-top" alt="...">`
+        : ''
+    }
       <div class="card-header">
         ${comments.author}
       </div>
