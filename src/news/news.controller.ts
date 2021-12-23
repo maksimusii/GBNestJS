@@ -1,3 +1,4 @@
+import { HelperFileLoader } from '../utils/HelperFileLoader';
 import { CreateNewsDto } from './dtos/create-news-dto';
 import { CommentsService } from './comments/comments.service';
 import { News, NewsService } from './news.service';
@@ -11,6 +12,7 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { renderNewsAll } from 'src/views/news/news-all';
@@ -19,7 +21,9 @@ import { renderNews } from 'src/views/news/news';
 import { EditeNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { HelperFileLoader } from './utils/HelperFileLoader';
+
+const PATH_NEWS = '\\news-static\\';
+HelperFileLoader.path = PATH_NEWS;
 
 @Controller('news')
 export class NewsController {
@@ -74,12 +78,32 @@ export class NewsController {
       }),
     }),
   )
-  create(@Body() news: CreateNewsDto): News {
+  create(
+    @Body() news: CreateNewsDto,
+    @UploadedFile() cover: Express.Multer.File,
+  ): News {
+    if (cover?.filename) {
+      news.cover = PATH_NEWS + cover.filename;
+    }
     return this.newsService.create(news);
   }
 
   @Put('/api')
-  change(@Body() news: EditeNewsDto): string {
+  @UseInterceptors(
+    FileInterceptor('cover', {
+      storage: diskStorage({
+        destination: HelperFileLoader.destinationPath,
+        filename: HelperFileLoader.customFileName,
+      }),
+    }),
+  )
+  change(
+    @Body() news: EditeNewsDto,
+    @UploadedFile() cover: Express.Multer.File,
+  ): string {
+    if (cover?.filename) {
+      news.cover = PATH_NEWS + cover.filename;
+    }
     const isChanged = this.newsService.change(news);
     if (isChanged) {
       throw new HttpException('News have been changed', HttpStatus.OK);
