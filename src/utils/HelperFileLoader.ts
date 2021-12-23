@@ -10,7 +10,7 @@ export class HelperFileLoader {
 
   public static customFileName(req, file, cb) {
     const originalName = file.originalname.split('.');
-    const fileExtension = originalName[originalName.lenhth - 1];
+    const fileExtension = originalName[originalName.length - 1];
     cb(null, `${uuidv4()}.${fileExtension}`);
   }
 
