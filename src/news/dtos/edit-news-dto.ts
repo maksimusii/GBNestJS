@@ -6,7 +6,7 @@ export class EditeNewsDto {
 
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.title !== undefined)
+  @ValidateIf((o) => o.title)
   title: string;
 
   @IsString()

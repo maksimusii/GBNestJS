@@ -8,6 +8,8 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { EditCommentsDto } from '../dtos/edit-comment-dto';
+import { CreateCommentsDto } from '../dtos/create-comment-dto';
 
 @Controller('comments')
 export class CommentsController {
@@ -16,7 +18,7 @@ export class CommentsController {
   @Post('/api/:idNews')
   create(
     @Param('idNews') idNews: string,
-    @Body() comment: Comment,
+    @Body() comment: CreateCommentsDto,
   ): Comment | string {
     const idNewsInt = parseInt(idNews);
     return this.commentsService.create(idNewsInt, comment);
@@ -56,7 +58,7 @@ export class CommentsController {
   @Patch('/api/:idNews')
   edit(
     @Param('idNews') idNews: string,
-    @Body() comment: Comment,
+    @Body() comment: EditCommentsDto,
   ): Comment | string {
     const idNewsInt = parseInt(idNews);
     return this.commentsService.edit(idNewsInt, comment);

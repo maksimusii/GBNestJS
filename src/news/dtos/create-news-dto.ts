@@ -19,7 +19,6 @@ export class CreateNewsDto {
   author: string;
 
   @ValidateIf((o) => o.countView || o.countView !== null)
-  @IsNumber()
   @IsNotEmpty()
   countView: number;
 
