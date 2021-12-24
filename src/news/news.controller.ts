@@ -76,6 +76,20 @@ export class NewsController {
         destination: HelperFileLoader.destinationPath,
         filename: HelperFileLoader.customFileName,
       }),
+      fileFilter: (req: Request, file, cb) => {
+        const originalName = file.originalname.split('.');
+        const fileExtension = originalName[originalName.length - 1];
+        if (fileExtension.search(/jpe?g|png|gif/i) === -1) {
+          return cb(
+            new HttpException(
+              'Extension of file not allowed',
+              HttpStatus.NOT_ACCEPTABLE,
+            ),
+            false,
+          );
+        }
+        return cb(null, true);
+      },
     }),
   )
   create(

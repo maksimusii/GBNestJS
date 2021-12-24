@@ -76,4 +76,13 @@ export class NewsService {
   getAll(): News[] {
     return this.news;
   }
+  checkFileExtension(filename: string) {
+    const originalName = filename.split('.');
+    const fileExtension = originalName[originalName.length - 1];
+    if (fileExtension.match(/jpg/)) {
+      return true;
+    } else {
+      return 'Extension of file is not image';
+    }
+  }
 }
