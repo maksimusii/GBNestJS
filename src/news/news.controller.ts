@@ -12,6 +12,7 @@ import {
   Param,
   Post,
   Put,
+  Render,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -47,16 +48,20 @@ export class NewsController {
       };
     }
   }
-
   @Get('/view')
+  @Render('news-list')
   getAllView() {
     const news = this.newsService.getAll();
-    const content = renderNewsAll(news);
-    return renderTemplate(content, {
-      title: 'Список новостей',
-      description: 'Самые крутые новости',
-    });
+    console.log(news);
+    return { news, title: 'Список новостей' };
   }
+
+  @Get('create/new')
+  @Render('create-news')
+  async createView() {
+    return {};
+  }
+
   @Get('/view/:idNews/detail')
   getNewsDetails(@Param('idNews') idNews: string) {
     const idInt = parseInt(idNews);
