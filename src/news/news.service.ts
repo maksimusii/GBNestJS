@@ -61,16 +61,16 @@ export class NewsService {
     return false;
   }
 
-  change(news: ChangeNews): boolean {
+  change(news: ChangeNews): News | string {
     const chagedNewsId = this.news.findIndex((item) => item.id === news.id);
     if (chagedNewsId !== -1) {
       this.news[chagedNewsId] = {
         ...this.news[chagedNewsId],
         ...news,
       };
-      return true;
+      return this.news[chagedNewsId];
     }
-    return false;
+    return 'Новость не изменена';
   }
 
   getAll(): News[] {

@@ -40,4 +40,30 @@ export class MailService {
         });
     }
   }
+
+  async sendChangeNewsForAdmins(
+    emails: string[],
+    news: News,
+    currentNews: News,
+  ): Promise<void> {
+    console.log(
+      'Отправляются письма о изменении новости администрации ресурса',
+    );
+    console.log(news);
+    for (const email of emails) {
+      await this.mailerService
+        .sendMail({
+          to: email,
+          subject: `Новость была изменена `,
+          template: './change-news',
+          context: { news, currentNews },
+        })
+        .then((res) => {
+          console.log('res', res);
+        })
+        .catch((err) => {
+          console.log('err', err);
+        });
+    }
+  }
 }

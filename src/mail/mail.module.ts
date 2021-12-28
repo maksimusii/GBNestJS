@@ -8,9 +8,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 @Module({
   imports: [
     MailerModule.forRoot({
-      transport: 'smtps://emailsender:password@smtp.yandex.ru',
+      transport: 'smtps://senderemail:password@smtp.yandex.ru',
       defaults: {
-        from: '"NestJS робот" <email@rtural.ru>',
+        from: '"NestJS робот" <senderemail>',
       },
       template: {
         dir: join(__dirname, 'templates'),

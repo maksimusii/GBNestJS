@@ -16,8 +16,6 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { renderTemplate } from 'src/views/template';
-import { renderNews } from 'src/views/news/news';
 import { EditeNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -123,15 +121,16 @@ export class NewsController {
   }
 
   @Put('/api')
-  change(@Body() news: EditeNewsDto): string {
-    const isChanged = this.newsService.change(news);
-    if (isChanged) {
-      throw new HttpException('News have been changed', HttpStatus.OK);
-    } else {
-      throw new HttpException(
-        'Getting mistakes id',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+  async change(@Body() news: EditeNewsDto) {
+    const currentNews = this.newsService.find(news.id);
+    const _news = this.newsService.change(news);
+    if (typeof _news !== 'string') {
+      await this.mailService.sendChangeNewsForAdmins(
+        ['email1@yandex.ru', 'email2@yandex.ru'],
+        news,
+        currentNews,
       );
+      return _news;
     }
   }
 
