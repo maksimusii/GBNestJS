@@ -16,12 +16,10 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { renderNewsAll } from 'src/views/news/news-all';
-import { renderTemplate } from 'src/views/template';
-import { renderNews } from 'src/views/news/news';
 import { EditeNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { MailService } from '../mail/mail.service';
 
 const PATH_NEWS = '\\news-static\\';
 HelperFileLoader.path = PATH_NEWS;
@@ -31,6 +29,7 @@ export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly commentsService: CommentsService,
+    private mailService: MailService,
   ) {}
 
   @Get('/api/:id')
@@ -52,7 +51,6 @@ export class NewsController {
   @Render('news-list')
   getAllView() {
     const news = this.newsService.getAll();
-    console.log(news);
     return { news, title: 'Список новостей' };
   }
 
@@ -63,15 +61,23 @@ export class NewsController {
   }
 
   @Get('/view/:idNews/detail')
+  @Render('news-detail')
   getNewsDetails(@Param('idNews') idNews: string) {
     const idInt = parseInt(idNews);
     const news = this.newsService.find(idInt);
     const comments = this.commentsService.find(idInt);
-    const content = renderNews(news, comments);
-    return renderTemplate(content, {
-      title: 'Список новостей',
-      description: 'Самые крутые новости',
-    });
+    return {
+      news,
+      comments,
+    };
+  }
+
+  @Get('/view/comments/:idNews')
+  @Render('comments-list')
+  getComments(@Param('idNews') idNews: string) {
+    const idInt = parseInt(idNews);
+    const comments = this.commentsService.find(idInt);
+    return { comments };
   }
 
   @Post('/api')
@@ -97,26 +103,34 @@ export class NewsController {
       },
     }),
   )
-  create(
+  async create(
     @Body() news: CreateNewsDto,
     @UploadedFile() cover: Express.Multer.File,
-  ): News {
-    if (cover?.filename) {
-      news.cover = PATH_NEWS + cover.filename;
-    }
-    return this.newsService.create(news);
+  ) {
+    console.log(news);
+    let coverPath = undefined;
+    if (cover?.filename?.length > 0) coverPath = PATH_NEWS + cover.filename;
+
+    const _news = this.newsService.create({ ...news, cover: coverPath });
+    await this.mailService.sendNewNewsForAdmins(
+      ['email1@yandex.ru', 'email2@yandex.ru'],
+      _news,
+    );
+
+    return _news;
   }
 
   @Put('/api')
-  change(@Body() news: EditeNewsDto): string {
-    const isChanged = this.newsService.change(news);
-    if (isChanged) {
-      throw new HttpException('News have been changed', HttpStatus.OK);
-    } else {
-      throw new HttpException(
-        'Getting mistakes id',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+  async change(@Body() news: EditeNewsDto) {
+    const currentNews = this.newsService.find(news.id);
+    const _news = this.newsService.change(news);
+    if (typeof _news !== 'string') {
+      await this.mailService.sendChangeNewsForAdmins(
+        ['email1@yandex.ru', 'email2@yandex.ru'],
+        news,
+        currentNews,
       );
+      return _news;
     }
   }
 

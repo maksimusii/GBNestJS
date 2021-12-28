@@ -1,0 +1,41 @@
+<h1>Создание комментариев</h1>
+<form method="post" action="/comments/api/{{idNews}}" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="authorInput" class="form-label">Автор</label>
+    <input class="form-control" name="author" id="authorInput">
+  </div>
+  <div class="mb-3">
+    <label for="messageInput" class="form-label">Сообщение</label>
+    <input class="form-control" name="message" id="messageInput">
+  </div>
+  <div class="form-group">
+    <label for="cover">Аватар</label>
+    <input type="file" class="form-control-file" name="avatar" id="avatar">
+  </div>
+  <button type="button" class="btn btn-primary" onclick='sendForm({{idNews}})'>Создать</button>
+</form>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  Date.prototype.toDateInputValue = (function() {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0, 10);
+  })
+
+  function sendForm(id) {
+    var data = new FormData($('form')[0]);
+    console.log(data)
+    $.ajax({
+      url: `/comments/api/${id}`,
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      success: function() {
+        alert('Комментарий к новости создан')
+        window.location.pathname = `news/view/comments/${id}`
+      }
+    });
+  }
+</script>
