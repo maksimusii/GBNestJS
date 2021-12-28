@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Render,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -58,6 +59,12 @@ export class CommentsController {
     }
     const idNewsInt = parseInt(idNews);
     return this.commentsService.create(idNewsInt, comment);
+  }
+
+  @Get('/create/new/:idNews')
+  @Render('create-comments')
+  async createView(@Param('idNews') idNews: string) {
+    return { idNews };
   }
 
   @Post('/api/:idNews/:idComment')

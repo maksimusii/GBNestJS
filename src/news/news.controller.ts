@@ -53,7 +53,6 @@ export class NewsController {
   @Render('news-list')
   getAllView() {
     const news = this.newsService.getAll();
-    console.log(news);
     return { news, title: 'Список новостей' };
   }
 
@@ -64,15 +63,23 @@ export class NewsController {
   }
 
   @Get('/view/:idNews/detail')
+  @Render('news-detail')
   getNewsDetails(@Param('idNews') idNews: string) {
     const idInt = parseInt(idNews);
     const news = this.newsService.find(idInt);
     const comments = this.commentsService.find(idInt);
-    const content = renderNews(news, comments);
-    return renderTemplate(content, {
-      title: 'Список новостей',
-      description: 'Самые крутые новости',
-    });
+    return {
+      news,
+      comments,
+    };
+  }
+
+  @Get('/view/comments/:idNews')
+  @Render('comments-list')
+  getComments(@Param('idNews') idNews: string) {
+    const idInt = parseInt(idNews);
+    const comments = this.commentsService.find(idInt);
+    return { comments };
   }
 
   @Post('/api')
