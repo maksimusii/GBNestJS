@@ -1,3 +1,4 @@
+import { HelperFileLoader } from '../utils/HelperFileLoader';
 import { CreateNewsDto } from './dtos/create-news-dto';
 import { CommentsService } from './comments/comments.service';
 import { News, NewsService } from './news.service';
@@ -11,17 +12,26 @@ import {
   Param,
   Post,
   Put,
+  Render,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { renderNewsAll } from 'src/views/news/news-all';
 import { renderTemplate } from 'src/views/template';
 import { renderNews } from 'src/views/news/news';
 import { EditeNewsDto } from './dtos/edit-news-dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { MailService } from '../mail/mail.service';
+
+const PATH_NEWS = '\\news-static\\';
+HelperFileLoader.path = PATH_NEWS;
 
 @Controller('news')
 export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly commentsService: CommentsService,
+    private mailService: MailService,
   ) {}
 
   @Get('/api/:id')
@@ -39,16 +49,20 @@ export class NewsController {
       };
     }
   }
-
   @Get('/view')
+  @Render('news-list')
   getAllView() {
     const news = this.newsService.getAll();
-    const content = renderNewsAll(news);
-    return renderTemplate(content, {
-      title: 'Список новостей',
-      description: 'Самые крутые новости',
-    });
+    console.log(news);
+    return { news, title: 'Список новостей' };
   }
+
+  @Get('create/new')
+  @Render('create-news')
+  async createView() {
+    return {};
+  }
+
   @Get('/view/:idNews/detail')
   getNewsDetails(@Param('idNews') idNews: string) {
     const idInt = parseInt(idNews);
@@ -62,8 +76,43 @@ export class NewsController {
   }
 
   @Post('/api')
-  create(@Body() news: CreateNewsDto): News {
-    return this.newsService.create(news);
+  @UseInterceptors(
+    FileInterceptor('cover', {
+      storage: diskStorage({
+        destination: HelperFileLoader.destinationPath,
+        filename: HelperFileLoader.customFileName,
+      }),
+      fileFilter: (req: Request, file, cb) => {
+        const originalName = file.originalname.split('.');
+        const fileExtension = originalName[originalName.length - 1];
+        if (fileExtension.search(/jpe?g|png|gif/i) === -1) {
+          return cb(
+            new HttpException(
+              'Extension of file not allowed',
+              HttpStatus.NOT_ACCEPTABLE,
+            ),
+            false,
+          );
+        }
+        return cb(null, true);
+      },
+    }),
+  )
+  async create(
+    @Body() news: CreateNewsDto,
+    @UploadedFile() cover: Express.Multer.File,
+  ) {
+    console.log(news);
+    let coverPath = undefined;
+    if (cover?.filename?.length > 0) coverPath = PATH_NEWS + cover.filename;
+
+    const _news = this.newsService.create({ ...news, cover: coverPath });
+    await this.mailService.sendNewNewsForAdmins(
+      ['email1@yandex.ru', 'email2@yandex.ru'],
+      _news,
+    );
+
+    return _news;
   }
 
   @Put('/api')
