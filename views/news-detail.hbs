@@ -1,34 +1,72 @@
 {{#if news}}
+  <h5 class="card-title">{{news.title}}</h5>
+  <h6 class="card-subtitle mb-2 text-muted">Автор: {{news.author}}</h6>
   <div class="row">
+    <div class="col-lg-3">
+      <img src='http://localhost:3000{{news.cover}}' class="card-img-top" style="height: 100%; object-fit: cover;" alt=''>
+    </div>
     <div class="col-lg-6">
-      <div class="card">
-        <img src='http://localhost:3000{{news.cover}}' class="card-img-top" style="height: 200px; object-fit: cover;" alt=''>
-        <div class="card-body">
-          <h5 class="card-title">{{news.title}}</h5>
-          <h6 class="card-subtitle mb-2 text-muted">Автор: {{news.author}}</h6>
-          <p class="card-text">{{news.description}}</p>
-        </div>
-      </div>
+      <p class="card-text">{{news.description}}</p>
     </div>
   </div>
-{{else}}
-  <h1>Список новостей пуст!</h1>
-{{/if}}
-{{#if comments}}
-<h1>Коментарии</h1> 
-  <div class="row">
+  <h1>Создание комментариев</h1>
+<form method="post" action="/comments/api/{{news.id}}" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="authorInput" class="form-label">Автор</label>
+    <input class="form-control" name="author" id="authorInput">
+  </div>
+  <div class="mb-3">
+    <label for="messageInput" class="form-label">Сообщение</label>
+    <textarea class="form-control" name="message" id="messageInput" rows="3"></textarea>
+  </div>
+  <div class="form-group mb-3">
+    <label for="cover">Аватар</label>
+    <input type="file" class="form-control-file" name="avatar" id="avatar">
+  </div>
+  <button type="button" class="btn btn-primary" onclick='sendForm({{news.id}})'>Оставить комментарий</button>
+</form>
+<script>
+  Date.prototype.toDateInputValue = (function() {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0, 10);
+  })
+
+  function sendForm(id) {
+    var data = new FormData($('form')[0]);
+    console.log(data)
+    $.ajax({
+      url: `/comments/api/${id}`,
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      success: function() {
+        window.location.pathname = `news/view/${id}/detail`
+      }
+    });
+  }
+</script>
+  {{#if comments}}
+    <h1>Коментарии</h1> 
+    <div class="row">
     {{#each comments}}
-    <div class="col-lg-6">
-      <div class="card">
-        <img src='http://localhost:3000{{this.avatar}}' class="card-img-top" style="height: 200px; object-fit: cover;" alt=''>
-        <div class="card-body">
-          <h5 class="card-title">{{this.author}}</h5>
-          <h6 class="card-subtitle mb-2 text-muted">Сообщение: {{this.message}}</h6>
-        </div>
+      <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+          <img src="{{#if this.avatar}}{{this.avatar}}{{else}}data:image/jpeg;base64,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{{/if}}" alt="twbs" width="32" height="32" class="rounded-circle flex-shrink-0">
+          <div class="d-flex gap-2 w-100 justify-content-between">
+            <div>
+              <h6 class="mb-0">{{this.author}}</h6>
+              <p class="mb-0 opacity-75">{{this.message}}</p>
+            </div>
+            <small class="opacity-50 text-nowrap">now</small>
+          </div>
+        </a>
       </div>
-    </div>
     {{/each}}
   </div>
-{{else}}
-  <h1>Эта новость еще не получила комментариев</h1>
+  {{else}}
+    <h1>Эта новость еще не получила комментариев</h1>
+  {{/if}}
 {{/if}}
