@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRendomId } from '../news.service';
+//import { getRendomId } from '../news.service';
 
 export type Comment = {
   id?: number;
@@ -30,7 +30,7 @@ export class CommentsService {
     if (!this.comments[idNews]) {
       this.comments[idNews] = [];
     }
-    this.comments[idNews].push({ ...comment, id: getRendomId() });
+    this.comments[idNews].push({ ...comment, id: 1 });
     return this.comments[idNews];
   }
   find(idNews: number): Comment[] | undefined {
@@ -78,7 +78,7 @@ export class CommentsService {
     }
     this.comments[idNews][replayCommentId].replayComments.push({
       ...commentReplay,
-      id: getRendomId(),
+      id: 1,
     });
     return this.comments[idNews][replayCommentId];
   }
