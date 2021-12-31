@@ -62,7 +62,7 @@ export class NewsController {
       );
     }
     return news;
-    //const comments = this.commentsService.find(id);
+    //const comments = this.commentsService.findById(id);
   }
 
   @Get('/view')
@@ -82,7 +82,7 @@ export class NewsController {
   @Render('news-detail')
   async getNewsDetails(@Param('idNews', ParseIntPipe) idNews: number) {
     const news = await this.newsService.findById(idNews);
-    const comments = this.commentsService.find(idNews);
+    const comments = await this.commentsService.findByNewsId(idNews);
     if (!news) {
       throw new HttpException(
         {
@@ -139,7 +139,7 @@ export class NewsController {
 
   @Put('/api')
   async change(@Body() news: EditeNewsDto): Promise<NewsEntity> {
-    const currentNews = await this.newsService.findById(news.id);
+    //const currentNews = await this.newsService.findById(news.id);
     const _news = await this.newsService.change(news);
     if (!_news) {
       throw new HttpException(

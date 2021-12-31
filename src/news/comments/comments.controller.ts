@@ -1,4 +1,5 @@
-import { CommentsService, Comment } from './comments.service';
+import { CommentsEntity } from 'src/news/comments/comments.entity';
+import { CommentsService } from './comments.service';
 import {
   Body,
   Controller,
@@ -7,6 +8,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UploadedFile,
@@ -25,7 +27,7 @@ HelperFileLoader.path = PATH_NEWS;
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post('/api/:idNews')
+  @Post('/api/:newsId')
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
@@ -48,55 +50,58 @@ export class CommentsController {
       },
     }),
   )
-  create(
-    @Param('idNews') idNews: string,
+  async create(
     @Body() comment: CreateCommentsDto,
+    @Param('newsId', ParseIntPipe) newsId: number,
     @UploadedFile() avatar: Express.Multer.File,
-  ): Comment | string {
+  ): Promise<CommentsEntity> {
     if (avatar?.filename) {
       comment.avatar = PATH_NEWS + avatar.filename;
     }
-    const idNewsInt = parseInt(idNews);
-    return this.commentsService.create(idNewsInt, comment);
+    return this.commentsService.create(comment, newsId);
   }
 
-  @Post('/api/:idNews/:idComment')
-  createReplay(
-    @Param('idComment') idComment: string,
-    @Param('idNews') idNews: string,
-    @Body() commentReplay: Comment,
-  ): Comment | string {
-    const idCommentInt = parseInt(idComment);
-    const idNewsInt = parseInt(idNews);
-    return this.commentsService.createReplay(
-      idCommentInt,
-      idNewsInt,
-      commentReplay,
+  @Get('/api/:newsId')
+  async get(
+    @Param('newsId', ParseIntPipe) newsId: number,
+  ): Promise<CommentsEntity[]> {
+    return this.commentsService.findByNewsId(newsId);
+  }
+
+  @Delete('/api/:commentId')
+  async remove(
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ): Promise<string> {
+    const isRemoved = await this.commentsService.remove(commentId);
+    throw new HttpException(
+      {
+        status: HttpStatus.OK,
+        error: isRemoved ? 'Коментарий удален' : 'Переданный не верный id',
+      },
+      HttpStatus.OK,
     );
   }
 
-  @Get('/api/:idNews')
-  get(@Param('idNews') idNews: string): Comment[] | undefined {
-    const idNewsInt = parseInt(idNews);
-    return this.commentsService.find(idNewsInt);
-  }
-
-  @Delete('/api/:idNews/:idComment')
-  remove(
-    @Param('idNews') idNews: string,
-    @Param('idComment') idComment: string,
-  ): Comment | undefined {
-    const idNewsInt = parseInt(idNews);
-    const idCommentInt = parseInt(idComment);
-    return this.commentsService.remove(idNewsInt, idCommentInt);
-  }
-
-  @Patch('/api/:idNews')
-  edit(
-    @Param('idNews') idNews: string,
+  @Patch('/api/:commentId')
+  async edit(
+    @Param('commentId', ParseIntPipe) commentId: number,
     @Body() comment: EditCommentsDto,
-  ): Comment | string {
-    const idNewsInt = parseInt(idNews);
-    return this.commentsService.edit(idNewsInt, comment);
+  ): Promise<CommentsEntity | null> {
+    return this.commentsService.edit(commentId, comment);
   }
+
+  // @Post('/api/:idNews/:idComment')
+  // createReplay(
+  //   @Param('idComment') idComment: string,
+  //   @Param('idNews') idNews: string,
+  //   @Body() commentReplay: Comment,
+  // ): Comment | string {
+  //   const idCommentInt = parseInt(idComment);
+  //   const idNewsInt = parseInt(idNews);
+  //   return this.commentsService.createReplay(
+  //     idCommentInt,
+  //     idNewsInt,
+  //     commentReplay,
+  //   );
+  // }
 }

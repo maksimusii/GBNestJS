@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CommentsEntity } from './comments/comments.entity';
 
 @Entity('news')
 export class NewsEntity {
@@ -23,8 +24,8 @@ export class NewsEntity {
   @Column('text', { nullable: true })
   cover: string;
 
-  // @OneToMany(() => CommentsEntity, (comments) => comments.news)
-  // comments: CommentsEntity;
+  @OneToMany(() => CommentsEntity, (comments) => comments.news)
+  comments: CommentsEntity;
 
   // @ManyToOne(() => CategoriesEntity, (category) => category.news)
   // category: CategoriesEntity;

@@ -14,7 +14,6 @@ export class CreateCommentsDto {
 
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((o) => o.title)
   author: string;
 
   replayComments: CreateReplayCommentsDto[];
