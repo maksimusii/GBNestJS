@@ -69,8 +69,16 @@ export class NewsService {
     return null;
   }
 
-  async getAll(): Promise<NewsEntity[]> {
-    return this.newsRepository.find({});
+  async getAll(userId?: number): Promise<NewsEntity[]> {
+    console.log(userId);
+    if (userId > 0) {
+      return this.newsRepository.find({
+        where: { user: userId },
+        relations: ['user'],
+      });
+    } else {
+      return this.newsRepository.find({ relations: ['user'] });
+    }
   }
 
   checkFileExtension(filename: string) {

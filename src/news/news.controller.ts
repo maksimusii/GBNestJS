@@ -25,6 +25,9 @@ import { MailService } from '../mail/mail.service';
 
 const PATH_NEWS = '\\news-static\\';
 HelperFileLoader.path = PATH_NEWS;
+interface Filter {
+  userId: number;
+}
 
 @Controller('news')
 export class NewsController {
@@ -62,13 +65,12 @@ export class NewsController {
       );
     }
     return news;
-    //const comments = this.commentsService.findById(id);
   }
 
   @Get('/view')
   @Render('news-list')
-  async getAllView() {
-    const news = await this.newsService.getAll();
+  async getAllView(@Body() filter: Filter) {
+    const news = await this.newsService.getAll(filter.userId);
     return { news, title: 'Список новостей' };
   }
 
