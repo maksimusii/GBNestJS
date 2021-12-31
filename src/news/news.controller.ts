@@ -18,7 +18,7 @@ import {
   UseInterceptors,
   ParseIntPipe,
 } from '@nestjs/common';
-import { EditeNewsDto } from './dtos/edit-news-dto';
+import { EditNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { MailService } from '../mail/mail.service';
@@ -138,7 +138,7 @@ export class NewsController {
   }
 
   @Put('/api')
-  async change(@Body() news: EditeNewsDto): Promise<NewsEntity> {
+  async change(@Body() news: EditNewsDto): Promise<NewsEntity> {
     //const currentNews = await this.newsService.findById(news.id);
     const _news = await this.newsService.change(news);
     if (!_news) {

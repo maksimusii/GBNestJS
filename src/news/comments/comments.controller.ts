@@ -87,7 +87,17 @@ export class CommentsController {
     @Param('commentId', ParseIntPipe) commentId: number,
     @Body() comment: EditCommentsDto,
   ): Promise<CommentsEntity | null> {
-    return this.commentsService.edit(commentId, comment);
+    const _comments = this.commentsService.edit(commentId, comment);
+    if (!_comments) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Комментарий не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return _comments;
   }
 
   // @Post('/api/:idNews/:idComment')
