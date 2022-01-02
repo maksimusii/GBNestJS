@@ -12,6 +12,7 @@ export class UsersService {
   ) {}
 
   async create(user: CreateUserDto) {
+    console.log(user);
     const userEntity = new UsersEntity();
     userEntity.firstName = user.firstName;
 

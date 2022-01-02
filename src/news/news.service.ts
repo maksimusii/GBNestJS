@@ -5,6 +5,7 @@ import { Comment } from './comments/comments.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EditNewsDto } from './dtos/edit-news-dto';
 
 export interface News {
   id?: number;
@@ -56,21 +57,28 @@ export class NewsService {
     return null;
   }
 
-  async change(news: ChangeNews): Promise<NewsEntity | null> {
-    const chagedNews = await this.findById(news.id);
-    if (chagedNews) {
-      const editableEntity = new NewsEntity();
-      editableEntity.title = news.title || chagedNews.title;
-      editableEntity.description = news.description || chagedNews.description;
-      editableEntity.cover = news.cover || chagedNews.cover;
-
-      return this.newsRepository.save(chagedNews);
+  async change(news: EditNewsDto): Promise<NewsEntity | null> {
+    let changedNews = await this.findById(news.id);
+    if (changedNews) {
+      changedNews = {
+        ...changedNews,
+        ...news,
+      };
+      return this.newsRepository.save(changedNews);
     }
     return null;
   }
 
-  async getAll(): Promise<NewsEntity[]> {
-    return this.newsRepository.find({});
+  async getAll(userId?: number): Promise<NewsEntity[]> {
+    console.log(userId);
+    if (userId > 0) {
+      return this.newsRepository.find({
+        where: { user: userId },
+        relations: ['user'],
+      });
+    } else {
+      return this.newsRepository.find({ relations: ['user'] });
+    }
   }
 
   checkFileExtension(filename: string) {
