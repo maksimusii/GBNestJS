@@ -40,13 +40,13 @@ export class NewsService {
   }
 
   async change(news: EditNewsDto): Promise<NewsEntity | null> {
-    let changedNews = await this.findById(news.id);
-    if (changedNews) {
-      changedNews = {
-        ...changedNews,
+    let _news = await this.findById(news.id);
+    if (_news) {
+      _news = {
+        ..._news,
         ...news,
       };
-      return this.newsRepository.save(changedNews);
+      return this.newsRepository.save(_news);
     }
     return null;
   }

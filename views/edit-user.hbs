@@ -1,0 +1,45 @@
+<h1>Редактировать пользователя</h1>
+<form method="post" action="/users/api/{{userId}}" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="firstNameInput" class="form-label">Имя</label>
+    <input class="form-control" name="firstName" id="firstNameInput">
+  </div>
+  <div class="mb-3">
+    <label for="emailInput" class="form-label">Email</label>
+    <input class="form-control" name="email" id="emailInput">
+  </div>
+   <div class="mb-3">
+    <label for="passwordInput" class="form-label">Пароль</label>
+    <input class="form-control" name="password" id="passwordInput">
+  </div>
+  <div class="form-group mb-3">
+    <label for="avatar">Аватар</label>
+    <input type="file" class="form-control-file" name="avatar" id="avatar">
+  </div>
+  {{!-- <input type="submit" value="Создать"> --}}
+  <button type="button" class="btn btn-primary" onclick='sendForm({{userId}})'>Создать</button>
+</form>
+<script>
+  Date.prototype.toDateInputValue = (function() {
+    var local = new Date(this);
+    local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return local.toJSON().slice(0, 10);
+  })
+
+  function sendForm(userId) {
+    var data = new FormData($('form')[0]);
+    console.log(data)
+    $.ajax({
+      url: `/users/api/${userId}`,
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'PUT',
+      success: function() {
+        alert('Данные пользователя изменена')
+        window.location.href = '/news/view'
+      }
+    });
+  }
+</script>
