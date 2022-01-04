@@ -1,85 +1,97 @@
-import { Injectable } from '@nestjs/common';
-//import { getRendomId } from '../news.service';
-
-export type Comment = {
-  id?: number;
-  message: string;
-  author: string;
-  replayComments?: ReplayComment[];
-  avatar?: string;
-};
-
-export type EditComment = {
-  id?: number;
-  message?: string;
-  author?: string;
-  avatar?: string;
-};
-
-export type ReplayComment = {
-  id?: number;
-  message: string;
-  author: string;
-};
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UsersService } from 'src/users/users.service';
+import { Repository } from 'typeorm';
+import { CreateCommentsDto } from '../dtos/create-comment-dto';
+import { EditCommentsDto } from '../dtos/edit-comment-dto';
+import { NewsService } from '../news.service';
+import { CommentsEntity } from './comments.entity';
 
 @Injectable()
 export class CommentsService {
-  private readonly comments = {};
+  constructor(
+    @InjectRepository(CommentsEntity)
+    private commentsRepository: Repository<CommentsEntity>,
+    private usersService: UsersService,
+    private newsService: NewsService,
+  ) {}
 
-  create(idNews: number, comment: Comment) {
-    if (!this.comments[idNews]) {
-      this.comments[idNews] = [];
+  async create(
+    comment: CreateCommentsDto,
+    newsId: number,
+  ): Promise<CommentsEntity> {
+    const _news = await this.newsService.findById(newsId);
+    if (_news) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Новости не найдена',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
-    this.comments[idNews].push({ ...comment, id: 1 });
-    return this.comments[idNews];
-  }
-  find(idNews: number): Comment[] | undefined {
-    return this.comments[idNews] || undefined;
-  }
-
-  remove(idNews: number, idComment: number): Comment | undefined {
-    console.log(this.comments[idNews]);
-    if (!this.comments[idNews]) {
-      return null;
+    const commentsEntity = new CommentsEntity();
+    commentsEntity.message = comment.message;
+    commentsEntity.news = _news;
+    const _user = await this.usersService.findById(comment.userId);
+    if (_user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Пользователь не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
-    const indexComment = this.comments[idNews].findIndex(
-      (c: Comment) => c.id === idComment,
-    );
-    console.log(indexComment);
-    if (indexComment === -1) {
-      return null;
-    }
-
-    return this.comments[idNews].splice(indexComment, 1);
-  }
-
-  edit(idNews: number, comment: EditComment): Comment | string {
-    const chagedCommentId: number = this.comments[idNews].findIndex(
-      (c: Comment) => c.id === comment.id,
-    );
-    if (chagedCommentId !== -1) {
-      this.comments[idNews][chagedCommentId] = {
-        ...this.comments[idNews][chagedCommentId],
-        ...comment,
-      };
-      return this.comments[idNews];
-    }
-    return 'Комментарий не найден';
+    commentsEntity.user = _user;
+    return this.commentsRepository.save(commentsEntity);
   }
 
-  createReplay(idComment: number, idNews: number, commentReplay: Comment) {
-    const replayCommentId: number = this.comments[idNews].findIndex(
-      (c: Comment) => c.id === idComment,
-    );
-    if (
-      !this.comments[idNews][replayCommentId].hasOwnProperty('replayComments')
-    ) {
-      this.comments[idNews][replayCommentId].replayComments = [];
-    }
-    this.comments[idNews][replayCommentId].replayComments.push({
-      ...commentReplay,
-      id: 1,
+  async findByNewsId(newsId: number): Promise<CommentsEntity[]> {
+    return this.commentsRepository.find({
+      where: { news: newsId },
+      relations: ['user'],
     });
-    return this.comments[idNews][replayCommentId];
+  }
+
+  async findById(commentId: number): Promise<CommentsEntity> {
+    return this.commentsRepository.findOne(commentId, { relations: ['user'] });
+  }
+
+  async remove(commentId: number): Promise<CommentsEntity> {
+    const _comment = await this.findById(commentId);
+    if (_comment) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Комментарий не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return this.commentsRepository.remove(_comment);
+  }
+
+  async edit(
+    commentId: number,
+    comment: EditCommentsDto,
+  ): Promise<CommentsEntity> {
+    const _comment = await this.findById(commentId);
+    if (_comment) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Комментарий не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    _comment.message = comment.message;
+    return this.commentsRepository.save(_comment);
+  }
+
+  async removeAll(newsId: number): Promise<CommentsEntity[]> {
+    const _comments = await this.findByNewsId(newsId);
+    return await this.commentsRepository.remove(_comments);
   }
 }

@@ -17,14 +17,22 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { EditeNewsDto } from './dtos/edit-news-dto';
+import { EditNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { MailService } from '../mail/mail.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/auth/role/roles.decorator';
+import { Role } from 'src/auth/role/role.enum';
 
 const PATH_NEWS = '\\news-static\\';
 HelperFileLoader.path = PATH_NEWS;
+
+interface Filter {
+  userId: number;
+}
 
 @Controller('news')
 export class NewsController {
@@ -62,13 +70,12 @@ export class NewsController {
       );
     }
     return news;
-    //const comments = this.commentsService.find(id);
   }
 
   @Get('/view')
   @Render('news-list')
-  async getAllView() {
-    const news = await this.newsService.getAll();
+  async getAllView(@Body() filter: Filter) {
+    const news = await this.newsService.getAll(filter.userId);
     return { news, title: 'Список новостей' };
   }
 
@@ -82,7 +89,7 @@ export class NewsController {
   @Render('news-detail')
   async getNewsDetails(@Param('idNews', ParseIntPipe) idNews: number) {
     const news = await this.newsService.findById(idNews);
-    const comments = this.commentsService.find(idNews);
+    const comments = await this.commentsService.findByNewsId(idNews);
     if (!news) {
       throw new HttpException(
         {
@@ -98,6 +105,8 @@ export class NewsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.Admin, Role.Moderator)
   @Post('/api')
   @UseInterceptors(
     FileInterceptor('cover', {
@@ -138,8 +147,8 @@ export class NewsController {
   }
 
   @Put('/api')
-  async change(@Body() news: EditeNewsDto): Promise<NewsEntity> {
-    const currentNews = await this.newsService.findById(news.id);
+  async change(@Body() news: EditNewsDto): Promise<NewsEntity> {
+    //const currentNews = await this.newsService.findById(news.id);
     const _news = await this.newsService.change(news);
     if (!_news) {
       throw new HttpException(

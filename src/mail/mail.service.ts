@@ -1,6 +1,6 @@
-import { News } from './../news/news.service';
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { CreateNewsDto } from 'src/news/dtos/create-news-dto';
 
 @Injectable()
 export class MailService {
@@ -21,7 +21,10 @@ export class MailService {
         console.log('err', err);
       });
   }
-  async sendNewNewsForAdmins(emails: string[], news: News): Promise<void> {
+  async sendNewNewsForAdmins(
+    emails: string[],
+    news: CreateNewsDto,
+  ): Promise<void> {
     console.log('Отправляются письма о новой новости администрации ресурса');
 
     for (const email of emails) {
@@ -43,8 +46,8 @@ export class MailService {
 
   async sendChangeNewsForAdmins(
     emails: string[],
-    news: News,
-    currentNews: News,
+    news: CreateNewsDto,
+    currentNews: CreateNewsDto,
   ): Promise<void> {
     console.log(
       'Отправляются письма о изменении новости администрации ресурса',
