@@ -1,4 +1,3 @@
-import { CreateReplayCommentsDto } from './edit-replay-comment-dto';
 import { IsNotEmpty, IsString, ValidateIf, IsNumber } from 'class-validator';
 
 export class CreateCommentsDto {
@@ -12,11 +11,7 @@ export class CreateCommentsDto {
   @ValidateIf((o) => o.title)
   message: string;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  author: string;
-
-  replayComments: CreateReplayCommentsDto[];
-
-  avatar: string;
+  userId: number;
 }

@@ -17,14 +17,19 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { EditNewsDto } from './dtos/edit-news-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { MailService } from '../mail/mail.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/auth/role/roles.decorator';
+import { Role } from 'src/auth/role/role.enum';
 
 const PATH_NEWS = '\\news-static\\';
 HelperFileLoader.path = PATH_NEWS;
+
 interface Filter {
   userId: number;
 }
@@ -100,6 +105,8 @@ export class NewsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.Admin, Role.Moderator)
   @Post('/api')
   @UseInterceptors(
     FileInterceptor('cover', {

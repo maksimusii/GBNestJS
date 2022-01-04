@@ -16,5 +16,6 @@ import { NewsEntity } from './news.entity';
     MailModule,
     UsersModule,
   ],
+  exports: [NewsService],
 })
 export class NewsModule {}

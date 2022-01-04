@@ -10,9 +10,4 @@ export class EditCommentsDto {
   @IsNotEmpty()
   @ValidateIf((o) => o.title)
   message: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ValidateIf((o) => o.title)
-  author: string;
 }

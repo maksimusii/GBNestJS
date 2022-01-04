@@ -3,10 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
-  OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,12 +17,8 @@ export class CommentsEntity {
   @Column('text')
   message: string;
 
-  @Column('text', { nullable: true })
-  avatar: string;
-
   @ManyToOne(() => NewsEntity, (news) => news.comments)
-  @JoinColumn({ name: 'newsId' })
-  news: number;
+  news: NewsEntity;
 
   @ManyToOne(() => UsersEntity, (user) => user.comments)
   user: UsersEntity;

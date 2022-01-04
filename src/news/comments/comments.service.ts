@@ -1,31 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreateCommentsDto } from '../dtos/create-comment-dto';
 import { EditCommentsDto } from '../dtos/edit-comment-dto';
+import { NewsService } from '../news.service';
 import { CommentsEntity } from './comments.entity';
-
-export type Comment = {
-  id?: number;
-  message: string;
-  author: string;
-  replayComments?: ReplayComment[];
-  avatar?: string;
-};
-
-export type EditComment = {
-  id?: number;
-  message?: string;
-  author?: string;
-  avatar?: string;
-};
-
-export type ReplayComment = {
-  id?: number;
-  message: string;
-  author: string;
-};
 
 @Injectable()
 export class CommentsService {
@@ -33,20 +13,36 @@ export class CommentsService {
     @InjectRepository(CommentsEntity)
     private commentsRepository: Repository<CommentsEntity>,
     private usersService: UsersService,
+    private newsService: NewsService,
   ) {}
 
   async create(
     comment: CreateCommentsDto,
     newsId: number,
   ): Promise<CommentsEntity> {
+    const _news = await this.newsService.findById(newsId);
+    if (_news) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Новости не найдена',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const commentsEntity = new CommentsEntity();
     commentsEntity.message = comment.message;
-    commentsEntity.avatar = comment.avatar;
-    commentsEntity.news = newsId;
-    const _user = await this.usersService.create({
-      firstName: comment.author,
-      id: 0,
-    });
+    commentsEntity.news = _news;
+    const _user = await this.usersService.findById(comment.userId);
+    if (_user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Пользователь не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     commentsEntity.user = _user;
     return this.commentsRepository.save(commentsEntity);
   }
@@ -62,42 +58,40 @@ export class CommentsService {
     return this.commentsRepository.findOne(commentId, { relations: ['user'] });
   }
 
-  async remove(commentId: number): Promise<CommentsEntity | null> {
-    const removedComment = await this.findById(commentId);
-    if (removedComment) {
-      return this.commentsRepository.remove(removedComment);
+  async remove(commentId: number): Promise<CommentsEntity> {
+    const _comment = await this.findById(commentId);
+    if (_comment) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Комментарий не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return null;
+    return this.commentsRepository.remove(_comment);
   }
 
   async edit(
     commentId: number,
     comment: EditCommentsDto,
-  ): Promise<CommentsEntity | null> {
-    let changedComment = await this.findById(commentId);
-    if (changedComment) {
-      changedComment = {
-        ...changedComment,
-        ...comment,
-      };
-      return this.commentsRepository.save(changedComment);
+  ): Promise<CommentsEntity> {
+    const _comment = await this.findById(commentId);
+    if (_comment) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Комментарий не найден',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return null;
+    _comment.message = comment.message;
+    return this.commentsRepository.save(_comment);
   }
 
-  // createReplay(idComment: number, idNews: number, commentReplay: Comment) {
-  //   const replayCommentId: number = this.comments[idNews].findIndex(
-  //     (c: Comment) => c.id === idComment,
-  //   );
-  //   if (
-  //     !this.comments[idNews][replayCommentId].hasOwnProperty('replayComments')
-  //   ) {
-  //     this.comments[idNews][replayCommentId].replayComments = [];
-  //   }
-  //   this.comments[idNews][replayCommentId].replayComments.push({
-  //     ...commentReplay,
-  //     id: 1,
-  //   });
-  //   return this.comments[idNews][replayCommentId];
-  // }
+  async removeAll(newsId: number): Promise<CommentsEntity[]> {
+    const _comments = await this.findByNewsId(newsId);
+    return await this.commentsRepository.remove(_comments);
+  }
 }

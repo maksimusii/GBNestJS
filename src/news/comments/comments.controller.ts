@@ -11,14 +11,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
 import { EditCommentsDto } from '../dtos/edit-comment-dto';
 import { CreateCommentsDto } from '../dtos/create-comment-dto';
-import { HelperFileLoader } from '../utils/HelperFileLoader';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { HelperFileLoader } from '../../utils/HelperFileLoader';
 
 const PATH_NEWS = '\\comments-static\\';
 HelperFileLoader.path = PATH_NEWS;
@@ -28,36 +24,10 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post('/api/:newsId')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: HelperFileLoader.destinationPath,
-        filename: HelperFileLoader.customFileName,
-      }),
-      fileFilter: (req: Request, file, cb) => {
-        const originalName = file.originalname.split('.');
-        const fileExtension = originalName[originalName.length - 1];
-        if (fileExtension.search(/jpe?g|png|gif/i) === -1) {
-          return cb(
-            new HttpException(
-              'Extension of file not allowed',
-              HttpStatus.NOT_ACCEPTABLE,
-            ),
-            false,
-          );
-        }
-        return cb(null, true);
-      },
-    }),
-  )
   async create(
     @Body() comment: CreateCommentsDto,
     @Param('newsId', ParseIntPipe) newsId: number,
-    @UploadedFile() avatar: Express.Multer.File,
   ): Promise<CommentsEntity> {
-    if (avatar?.filename) {
-      comment.avatar = PATH_NEWS + avatar.filename;
-    }
     return this.commentsService.create(comment, newsId);
   }
 
@@ -99,19 +69,4 @@ export class CommentsController {
     }
     return _comments;
   }
-
-  // @Post('/api/:idNews/:idComment')
-  // createReplay(
-  //   @Param('idComment') idComment: string,
-  //   @Param('idNews') idNews: string,
-  //   @Body() commentReplay: Comment,
-  // ): Comment | string {
-  //   const idCommentInt = parseInt(idComment);
-  //   const idNewsInt = parseInt(idNews);
-  //   return this.commentsService.createReplay(
-  //     idCommentInt,
-  //     idNewsInt,
-  //     commentReplay,
-  //   );
-  // }
 }
