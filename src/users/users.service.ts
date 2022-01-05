@@ -6,6 +6,7 @@ import { UsersEntity } from './users.entity';
 import { hash } from '../utils/crypto';
 import { EditUserDto } from './dtos/edit-user-dto';
 import { Role } from 'src/auth/role/role.enum';
+import { Permission } from 'src/auth/permission/permission.enum';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,7 @@ export class UsersService {
     userEntity.email = user.email;
     userEntity.password = await hash(user.password);
     userEntity.roles = user.roles;
+    userEntity.permissions = Permission.EditUser;
     return this.usersRepository.save(userEntity);
   }
 

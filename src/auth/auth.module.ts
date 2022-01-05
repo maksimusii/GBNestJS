@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { RolesGuard } from './role/roles.guard';
+import { PermissionsGuard } from './permission/permissions.guard';
 
 @Module({
   imports: [
@@ -26,6 +27,10 @@ import { RolesGuard } from './role/roles.guard';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
     },
   ],
   controllers: [AuthController],

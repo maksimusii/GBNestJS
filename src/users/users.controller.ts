@@ -1,3 +1,5 @@
+import { Permission } from './../auth/permission/permission.enum';
+import { Permissions } from './../auth/permission/permissions.decorator';
 import { UsersService } from './users.service';
 import {
   Body,
@@ -58,7 +60,8 @@ export class UsersController {
     return this.userService.create({ ...user, avatar: avatarPath });
   }
 
-  @Put('/api/:userId')
+  @Post('/api/:userId')
+  @Permissions(Permission.EditUser)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({

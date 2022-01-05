@@ -14,10 +14,6 @@ import {
 } from '@nestjs/common';
 import { EditCommentsDto } from '../dtos/edit-comment-dto';
 import { CreateCommentsDto } from '../dtos/create-comment-dto';
-import { HelperFileLoader } from '../../utils/HelperFileLoader';
-
-const PATH_NEWS = '\\comments-static\\';
-HelperFileLoader.path = PATH_NEWS;
 
 @Controller('comments')
 export class CommentsController {

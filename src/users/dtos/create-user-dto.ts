@@ -1,5 +1,6 @@
 import { Role } from './../../auth/role/role.enum';
 import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Permission } from 'src/auth/permission/permission.enum';
 
 export class CreateUserDto {
   id: number;
@@ -24,4 +25,9 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   roles: Role;
+
+  @IsString()
+  @IsNotEmpty()
+  @ValidateIf((o) => o.permissions)
+  permissions: Permission;
 }

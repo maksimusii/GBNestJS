@@ -1,3 +1,4 @@
+import { Permission } from './../auth/permission/permission.enum';
 import { IsEnum } from 'class-validator';
 import { Role } from 'src/auth/role/role.enum';
 import { CommentsEntity } from 'src/news/comments/comments.entity';
@@ -31,6 +32,10 @@ export class UsersEntity {
   @Column('text')
   @IsEnum(Role)
   roles: Role;
+
+  @Column('text')
+  @IsEnum(Permission)
+  permissions: Permission;
 
   @OneToMany(() => NewsEntity, (news) => news.user)
   news: NewsEntity;
