@@ -18,19 +18,23 @@ export class PermissionsGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<Permission[]>(
+    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
 
-    if (!requiredRoles) {
+    if (!requiredPermissions) {
       return true;
     }
     const { headers } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
     const { authorization } = headers;
+    //const request = context.switchToHttp().getRequest();
     const user = await this.authService.verify(authorization.split(' ')[1]);
     const _user = await this.usersService.findById(user.id);
-
-    return requiredRoles.some((permission) => _user.permissions === permission);
+    const userId = request.params.userId;
+    return requiredPermissions.some(
+      (permission) => _user.permissions === permission && _user.id == userId,
+    );
   }
 }
